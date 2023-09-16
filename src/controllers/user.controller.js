@@ -7,8 +7,18 @@ const userController = new Object();
 // Get all users
 userController.getAllUsers = async (req, res) => {
     try {
-        const users = await prisma.user.findMany();
-        const userList = exclude(users, ['password']);
+        const users = await prisma.user.findMany({
+            select: {
+                email: true,
+                username: true,
+                guardID: true,
+                role: true,
+                initials: true,
+                photoUrl: true,
+                status: true
+            },
+        });
+        //const userList = exclude(users, ['password']);
 
         return res.status(200).json({
             success: true,

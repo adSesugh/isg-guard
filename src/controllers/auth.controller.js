@@ -37,6 +37,7 @@ authController.signUp = async (req, res) => {
                         firstName: first_name,
                         lastName: last_name,
                         email: email,
+                        flatId: '65062a8315d36d2c24ef28f7',
                     }
                 }
             },

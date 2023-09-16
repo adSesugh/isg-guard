@@ -23,6 +23,8 @@ model User {
   createdAt DateTime   @default(now()) @db.Timestamp()
   updatedAt DateTime   @default(now()) @db.Timestamp()
   FlatOwner FlatOwner?
+
+  @@map("users")
 }
 
 model Society {
@@ -30,9 +32,11 @@ model Society {
   name      String    @unique
   location  String?
   towers    Tower[]
-  guard     Guard[]
+  guards    Guard[]
   createdAt DateTime  @default(now()) @db.Timestamp()
   updatedAt DateTime? @default(now()) @db.Timestamp()
+
+  @@map("societies")
 }
 
 model Tower {
@@ -46,6 +50,8 @@ model Tower {
   flatOwnerId String?    @db.ObjectId
   Society     Society?   @relation(fields: [societyId], references: [id])
   societyId   String?    @db.ObjectId
+
+  @@map("towers")
 }
 
 model Guard {
@@ -61,6 +67,8 @@ model Guard {
   createdAt   DateTime  @default(now()) @db.Timestamp()
   updatedAt   DateTime? @default(now()) @db.Timestamp()
   Society     Society   @relation(fields: [societyId], references: [id])
+
+  @@map("guards")
 }
 
 model Flat {
@@ -73,13 +81,15 @@ model Flat {
   updatedAt DateTime?  @default(now()) @db.Timestamp()
   Tower     Tower      @relation(fields: [towerId], references: [id])
   FlatOwner FlatOwner?
+
+  @@map("flats")
 }
 
 model FlatOwner {
   id           String        @id @default(auto()) @map("_id") @db.ObjectId
   firstName    String
   lastName     String
-  flatNumber   String
+  flatNumber   String?
   email        String
   phoneNumber  String?
   dateOfBirth  DateTime?
@@ -90,11 +100,13 @@ model FlatOwner {
   userId       String        @unique @db.ObjectId
   appointments Appointment[]
   status       Status        @default(ACTIVE)
-  createdAt    DateTime      @default(now()) @db.Timestamp()
+  createdAt    DateTime?     @default(now()) @db.Timestamp()
   updatedAt    DateTime?     @default(now()) @db.Timestamp()
   Tower        Tower[]
   User         User          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   Flat         Flat          @relation(fields: [flatId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("flatOwners")
 }
 
 model Appointment {
@@ -110,6 +122,8 @@ model Appointment {
   updatedAt     DateTime?  @default(now()) @db.Timestamp()
   FlatOwner     FlatOwner? @relation(fields: [flatOwnerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   flatOwnerId   String?    @db.ObjectId
+
+  @@map("appointments")
 }
 
 enum Role {
