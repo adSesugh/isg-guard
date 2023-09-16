@@ -1,42 +1,16 @@
-/**
- * Required External Modules
- */
-import express from 'express';
+import http from 'http';
 import dotenv from 'dotenv'
-import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+
+// local module
+import app from './src/app.js'
 
 dotenv.config()
 
-const app = express();
-const PORT = process.env.PORT || 5000;
-const prisma = new PrismaClient()
+const { API_PORT, HOSTNAME } = process.env;
 
-app.use(express.json());
+const PORT = process.env.PORT || API_PORT;
+const server = http.createServer(app);
 
-app.get('/', async (req, res) => {
-    const encryptedPassword = await bcrypt.hash('admin', 10);
-    const user = await prisma.user.create({
-        data: {
-            email: 'admin@gmail.com',
-            username: 'admin',
-            name: 'Sesugh Agbadu',
-            role: 'FLATOWNER',
-            password: encryptedPassword
-        }
-    });
-    const token = jwt.sign({
-        id: user.id,
-        name: user.name,
-        role: user.role
-    }, process.env.SECRET_KEY, { expiresIn: '2h'});
-    user.token = token;
-    //delete user.password;
-    console.log(user)
-    res.status(200).json(user);
-});
-
-app.listen(PORT, process.env.HOSTNAME, () => {
-    console.log(`Server is running on http://${process.env.HOSTNAME}:${PORT}`)
+server.listen(PORT, HOSTNAME, () => {
+    console.log(`Server is running on http://${HOSTNAME}:${PORT}`)
 })

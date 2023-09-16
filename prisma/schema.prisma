@@ -11,16 +11,25 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  email    String  @unique
-  username String  @unique
-  name     String?
-  role     Role    @default(FLATOWNER)
-  password String
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  first_name String
+  last_name  String
+  email      String  @unique
+  username   String  @unique
+  initials   String?
+  role       Role    @default(FLAT_OWNER)
+  password   String
+  status     Status  @default(ACTIVE)
 }
 
 enum Role {
   GUARD
-  FLATOWNER
-  SOCIETYAGENT
+  FLAT_OWNER
+  SOCIETY_AGENT
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
 }
