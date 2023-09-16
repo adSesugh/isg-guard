@@ -11,7 +11,7 @@ authController.signUp = async (req, res) => {
         // Request body
         const { first_name, last_name, email, username, password } = req.body;
 
-        if (!(first_name && last_name && email && username && password)){
+        if (!(first_name && last_name && email && username && password)) {
             return res.status(415).json({
                 message: "Invalid entries",
                 success: false
@@ -28,13 +28,18 @@ authController.signUp = async (req, res) => {
         // Create user and return the added the user
         const user = await prisma.user.create({
             data: {
-                first_name,
-                last_name,
                 email,
                 username,
                 initials,
                 password: hashPassword,
-            }
+                FlatOwner: {
+                    create: {
+                        firstName: first_name,
+                        lastName: last_name,
+                        email: email,
+                    }
+                }
+            },
         });
 
         // Remove password from the user object
@@ -45,9 +50,9 @@ authController.signUp = async (req, res) => {
             id: user.id,
             name: `${user.first_name} ${user.last_name}`,
             role: user.role
-        }
-        const {accessToken, refreshToken } = generateAccessToken(payload);
-        
+        };
+        const { accessToken, refreshToken } = generateAccessToken(payload);
+
         user.accessToken = accessToken;
         user.refreshToken = refreshToken;
 
@@ -59,34 +64,34 @@ authController.signUp = async (req, res) => {
             error
         });
     }
-}
+};
 
 // User sign in function
 authController.signIn = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const user = await prisma.user.findFirst({where: { email: email}});
+        const user = await prisma.user.findFirst({ where: { email: email } });
 
-        if (!(email && password)){
+        if (!(email && password)) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid credentials"
             });
         }
 
-        if (!user){
+        if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "Credentials not found"
             });
-        } else if (!bcrypt.compare(password, user.password)){
+        } else if (!bcrypt.compare(password, user.password)) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid credentials"
             });
         }
-        
+
         // prepare payload and generate access token
         const payload = {
             email: user.email,
@@ -98,11 +103,11 @@ authController.signIn = async (req, res) => {
         payload.role = user.role;
 
         return res.status(200).json({
-              success: true,
-              message: `Welcome ${user.first_name}!`,
-              user: payload,
-              accessToken,
-              refreshToken
+            success: true,
+            message: `Welcome ${user.first_name}!`,
+            user: payload,
+            accessToken,
+            refreshToken
         });
     } catch (error) {
         res.status(500).json({
@@ -111,7 +116,7 @@ authController.signIn = async (req, res) => {
             error
         });
     }
-}
+};
 
 
 export default authController;

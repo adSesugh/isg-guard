@@ -11,15 +11,105 @@ datasource db {
 }
 
 model User {
-  id         String  @id @default(auto()) @map("_id") @db.ObjectId
-  first_name String
-  last_name  String
-  email      String  @unique
-  username   String  @unique
-  initials   String?
-  role       Role    @default(FLAT_OWNER)
-  password   String
-  status     Status  @default(ACTIVE)
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  email     String     @unique
+  username  String     @unique
+  guardID   String?    @unique
+  role      Role       @default(FLAT_OWNER)
+  initials  String
+  photoUrl  String?
+  status    Status     @default(ACTIVE)
+  password  String
+  createdAt DateTime   @default(now()) @db.Timestamp()
+  updatedAt DateTime   @default(now()) @db.Timestamp()
+  FlatOwner FlatOwner?
+}
+
+model Society {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String    @unique
+  location  String?
+  towers    Tower[]
+  guard     Guard[]
+  createdAt DateTime  @default(now()) @db.Timestamp()
+  updatedAt DateTime? @default(now()) @db.Timestamp()
+}
+
+model Tower {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  address     Address?
+  flats       Flat[]
+  createdAt   DateTime   @default(now()) @db.Timestamp()
+  updatedAt   DateTime?  @default(now()) @db.Timestamp()
+  FlatOwner   FlatOwner? @relation(fields: [flatOwnerId], references: [id])
+  flatOwnerId String?    @db.ObjectId
+  Society     Society?   @relation(fields: [societyId], references: [id])
+  societyId   String?    @db.ObjectId
+}
+
+model Guard {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  societyId   String    @db.ObjectId
+  number      String    @unique
+  firstName   String
+  lastName    String
+  phoneNumber String
+  email       String
+  address     Address?
+  status      Status    @default(ACTIVE)
+  createdAt   DateTime  @default(now()) @db.Timestamp()
+  updatedAt   DateTime? @default(now()) @db.Timestamp()
+  Society     Society   @relation(fields: [societyId], references: [id])
+}
+
+model Flat {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  number    String     @unique
+  name      String?
+  societyId String     @unique @db.ObjectId
+  towerId   String     @unique @db.ObjectId
+  createdAt DateTime   @default(now()) @db.Timestamp()
+  updatedAt DateTime?  @default(now()) @db.Timestamp()
+  Tower     Tower      @relation(fields: [towerId], references: [id])
+  FlatOwner FlatOwner?
+}
+
+model FlatOwner {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  firstName    String
+  lastName     String
+  flatNumber   String
+  email        String
+  phoneNumber  String?
+  dateOfBirth  DateTime?
+  flatId       String        @unique @db.ObjectId
+  address      Address?
+  latitude     Float?
+  longitude    Float?
+  userId       String        @unique @db.ObjectId
+  appointments Appointment[]
+  status       Status        @default(ACTIVE)
+  createdAt    DateTime      @default(now()) @db.Timestamp()
+  updatedAt    DateTime?     @default(now()) @db.Timestamp()
+  Tower        Tower[]
+  User         User          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Flat         Flat          @relation(fields: [flatId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Appointment {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  visitorNumber String
+  phoneNumber   String?
+  email         String
+  purpose       String?
+  photoUrl      String
+  status        Status     @default(ACTIVE)
+  createdAt     DateTime   @default(now()) @db.Timestamp()
+  updatedAt     DateTime?  @default(now()) @db.Timestamp()
+  FlatOwner     FlatOwner? @relation(fields: [flatOwnerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  flatOwnerId   String?    @db.ObjectId
 }
 
 enum Role {
@@ -32,4 +122,11 @@ enum Status {
   ACTIVE
   INACTIVE
   SUSPENDED
+}
+
+type Address {
+  street String
+  city   String
+  state  String
+  zip    String
 }
