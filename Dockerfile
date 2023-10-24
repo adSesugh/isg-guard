@@ -7,7 +7,8 @@ COPY . /app/
 
 RUN npm install --production
 RUN npx prisma generate 
+RUN npx prisma migrate --name init
 
-EXPOSE 8001
+EXPOSE 3000
 
 CMD [ "npm", "start"]
