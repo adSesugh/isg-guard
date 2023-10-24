@@ -7,12 +7,12 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  id        String     @id @default(cuid())
   email     String     @unique
   username  String     @unique
   guardID   String?    @unique
@@ -29,7 +29,7 @@ model User {
 }
 
 model Society {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  id        String    @id @default(cuid())
   name      String    @unique
   location  String?
   towers    Tower[]
@@ -41,29 +41,29 @@ model Society {
 }
 
 model Tower {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  id          String     @id @default(cuid())
   name        String
-  address     Address?
+  address     String?
   flats       Flat[]
   createdAt   DateTime   @default(now()) @db.Timestamp()
   updatedAt   DateTime?  @default(now()) @db.Timestamp()
   FlatOwner   FlatOwner? @relation(fields: [flatOwnerId], references: [id])
-  flatOwnerId String?    @db.ObjectId
+  flatOwnerId String?
   Society     Society?   @relation(fields: [societyId], references: [id])
-  societyId   String?    @db.ObjectId
+  societyId   String?
 
   @@map("towers")
 }
 
 model Guard {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  societyId   String    @db.ObjectId
+  id          String    @id @default(cuid())
+  societyId   String
   number      String    @unique
   firstName   String
   lastName    String
   phoneNumber String
   email       String
-  address     Address?
+  address     String?
   status      Status    @default(ACTIVE)
   createdAt   DateTime  @default(now()) @db.Timestamp()
   updatedAt   DateTime? @default(now()) @db.Timestamp()
@@ -73,11 +73,11 @@ model Guard {
 }
 
 model Flat {
-  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  id        String     @id @default(cuid())
   number    String     @unique
   name      String?
-  societyId String     @unique @db.ObjectId
-  towerId   String     @unique @db.ObjectId
+  societyId String     @unique
+  towerId   String     @unique
   createdAt DateTime   @default(now())
   updatedAt DateTime?  @default(now()) @db.Timestamp()
   Tower     Tower      @relation(fields: [towerId], references: [id])
@@ -87,18 +87,18 @@ model Flat {
 }
 
 model FlatOwner {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  id           String        @id @default(cuid())
   firstName    String
   lastName     String
   flatNumber   String?
   email        String
   phoneNumber  String?
   dateOfBirth  DateTime?
-  flatId       String?       @unique @db.ObjectId
-  address      Address?
+  flatId       String?       @unique
+  address      String?
   latitude     Float?
   longitude    Float?
-  userId       String        @unique @db.ObjectId
+  userId       String        @unique
   appointments Appointment[]
   status       Status        @default(ACTIVE)
   createdAt    DateTime?     @default(now()) @db.Timestamp()
@@ -111,7 +111,7 @@ model FlatOwner {
 }
 
 model Appointment {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  id            String     @id @default(cuid())
   name          String
   visitorNumber String
   phoneNumber   String?
@@ -122,7 +122,7 @@ model Appointment {
   createdAt     DateTime   @default(now()) @db.Timestamp()
   updatedAt     DateTime?  @default(now()) @db.Timestamp()
   FlatOwner     FlatOwner? @relation(fields: [flatOwnerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  flatOwnerId   String?    @db.ObjectId
+  flatOwnerId   String?
 
   @@map("appointments")
 }
@@ -137,11 +137,4 @@ enum Status {
   ACTIVE
   INACTIVE
   SUSPENDED
-}
-
-type Address {
-  street String
-  city   String
-  state  String
-  zip    String
 }
