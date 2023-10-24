@@ -3,9 +3,9 @@ import express from 'express';
 
 const router = express.Router();
 
-router.get('/', societyController.read)
+router.get('/', societyController.list)
     .post('/', societyController.create)
     .get('/:id/details', societyController.singleSociety)
     .put('/:id/update', societyController.update)
-    .delete('/:id', societyController.delete);
+    .delete('/:id/destroy', societyController.delete);
 export default router;

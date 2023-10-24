@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 const societyController = new Object();
 
 // GET - Get all society records
-societyController.read = async (req, res) => {
+societyController.list = async (req, res) => {
     try {
         const societies = await prisma.society.findMany({});
         return res.status(200).json({
@@ -59,7 +59,7 @@ societyController.create = async (req, res) => {
         });
         return res.status(201).json({
             success: true,
-            message: "Soceity created",
+            message: "Society created",
             society
         });
     } catch (error) {

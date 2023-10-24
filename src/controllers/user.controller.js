@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { encryptedPassword, exclude } from "../utils/helpers.js";
+import { encryptedPassword, getInitials } from "../utils/helpers.js";
 
 const prisma = new PrismaClient();
 const userController = new Object();
@@ -22,12 +22,13 @@ userController.getAllUsers = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            data: userList
+            data: users
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Server error"
+            message: "Server error",
+            error
         });
     }
 };
@@ -36,17 +37,10 @@ userController.getAllUsers = async (req, res) => {
 userController.createUser = async (req, res) => {
     try {
         // Request body
-        const {
-            first_name,
-            last_name,
-            email,
-            username,
-            role,
-            password
-        } = req.body;
+        const { first_name, last_name, flatId, email, username, role, password } = req.body;
 
-        if (!(first_name && last_name && email && username && role && password)) {
-            return res.status(415).json({
+        if (!(email && username && role && password)) {
+            return res.status(400).json({
                 success: false,
                 message: "Invalid entry"
             });
@@ -55,17 +49,30 @@ userController.createUser = async (req, res) => {
         // Hashed password
         const hashPassword = await encryptedPassword(password);
 
+        // form user fullname to extract abbr
+        const fullname = `${first_name} ${last_name}`;
+        const initials = getInitials(fullname);
+
         // Create user and return the added the user
         const user = await prisma.user.create({
             data: {
-                first_name,
-                last_name,
                 email,
                 username,
                 role,
-                password: hashPassword
+                initials,
+                password: hashPassword,
+                FlatOwner: {
+                    create: {
+                        firstName: first_name,
+                        lastName: last_name,
+                        email: email,
+                        flatId: flatId
+                    }
+                }
             }
         });
+
+        console.log(user);
 
         // Remove password from the user object
         delete user.password;
@@ -78,7 +85,8 @@ userController.createUser = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Server error"
+            message: "Server error",
+            error
         });
     }
 };

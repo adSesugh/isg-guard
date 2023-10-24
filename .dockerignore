@@ -1,0 +1,6 @@
+node_modules/
+swagger.json
+request.rest
+readme.md
+endpoint*
+package-lock.json

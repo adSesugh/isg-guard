@@ -1,18 +1,121 @@
 import { PrismaClient } from "@prisma/client";
-import { encryptedPassword, generateAccessToken, getInitials } from "../utils/helpers.js";
+import { currentUser, encryptedPassword, generateAccessToken, getInitials } from "../utils/helpers.js";
 import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
 
+dotenv.config();
 const authController = new Object();
 const prisma = new PrismaClient();
+const { FRONTEND_URL } = process.env;
 
 // User registration function
+/**
+ * @swagger
+ * tags:
+ *   name: Books
+ *   description: The books managing API
+ * /books:
+ *   get:
+ *     summary: Lists all the books
+ *     tags: [Books]
+ *     responses:
+ *       200:
+ *         description: The list of the books
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Book'
+ *   post:
+ *     summary: Create a new book
+ *     tags: [Books]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Book'
+ *     responses:
+ *       200:
+ *         description: The created book.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Book'
+ *       500:
+ *         description: Some server error
+ * /books/{id}:
+ *   get:
+ *     summary: Get the book by id
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The book id
+ *     responses:
+ *       200:
+ *         description: The book response by id
+ *         contens:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Book'
+ *       404:
+ *         description: The book was not found
+ *   put:
+ *    summary: Update the book by the id
+ *    tags: [Books]
+ *    parameters:
+ *      - in: path
+ *        name: id
+ *        schema:
+ *          type: string
+ *        required: true
+ *        description: The book id
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            $ref: '#/components/schemas/Book'
+ *    responses:
+ *      200:
+ *        description: The book was updated
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Book'
+ *      404:
+ *        description: The book was not found
+ *      500:
+ *        description: Some error happened
+ *   delete:
+ *     summary: Remove the book by id
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The book id
+ *
+ *     responses:
+ *       200:
+ *         description: The book was deleted
+ *       404:
+ *         description: The book was not found
+ */
 authController.signUp = async (req, res) => {
     try {
         // Request body
         const { first_name, last_name, email, username, password } = req.body;
 
         if (!(first_name && last_name && email && username && password)) {
-            return res.status(415).json({
+            return res.status(400).json({
                 message: "Invalid entries",
                 success: false
             });
@@ -37,7 +140,6 @@ authController.signUp = async (req, res) => {
                         firstName: first_name,
                         lastName: last_name,
                         email: email,
-                        flatId: '65062a8315d36d2c24ef28f7',
                     }
                 }
             },
@@ -71,7 +173,6 @@ authController.signUp = async (req, res) => {
 authController.signIn = async (req, res) => {
     try {
         const { email, password } = req.body;
-
         const user = await prisma.user.findFirst({ where: { email: email } });
 
         if (!(email && password)) {
@@ -105,7 +206,7 @@ authController.signIn = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: `Welcome ${user.first_name}!`,
+            message: `Welcome ${user.username}!`,
             user: payload,
             accessToken,
             refreshToken
@@ -119,5 +220,53 @@ authController.signIn = async (req, res) => {
     }
 };
 
+// POST - Send reset password token link
+authController.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await prisma.user.findFirstOrThrow({
+            where: {
+                email: email
+            }
+        });
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "Account doesn't exists"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Password Reset Link sent"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+            error
+        });
+    }
+};
+
+// POST - Reset password
+authController.resetPassword = async (req, res) => {
+    try {
+        const { id, email } = currentUser(req);
+        const { password, retryPassword } = req.body;
+
+        return res.status(200).json({
+            success: true,
+            message: ""
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+            error
+        });
+    }
+};
 
 export default authController;

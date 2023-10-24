@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -77,7 +78,7 @@ model Flat {
   name      String?
   societyId String     @unique @db.ObjectId
   towerId   String     @unique @db.ObjectId
-  createdAt DateTime   @default(now()) @db.Timestamp()
+  createdAt DateTime   @default(now())
   updatedAt DateTime?  @default(now()) @db.Timestamp()
   Tower     Tower      @relation(fields: [towerId], references: [id])
   FlatOwner FlatOwner?
@@ -93,7 +94,7 @@ model FlatOwner {
   email        String
   phoneNumber  String?
   dateOfBirth  DateTime?
-  flatId       String        @unique @db.ObjectId
+  flatId       String?       @unique @db.ObjectId
   address      Address?
   latitude     Float?
   longitude    Float?
@@ -104,7 +105,7 @@ model FlatOwner {
   updatedAt    DateTime?     @default(now()) @db.Timestamp()
   Tower        Tower[]
   User         User          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  Flat         Flat          @relation(fields: [flatId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Flat         Flat?         @relation(fields: [flatId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("flatOwners")
 }

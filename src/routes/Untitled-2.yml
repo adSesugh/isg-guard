@@ -1,0 +1,48 @@
+openapi: '3.0.2'
+info:
+  title: API Title
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+
+components:
+  schemas:
+    name:
+      type: object
+      properties:
+        property:
+          type: integerpaths:
+  /test:
+    get:
+      responses:
+        '200':
+          description: OK
+  /auth/signIn:
+    post:
+      summary: 'Account sign in'
+      description: 'Account SignIn!'
+      tags:
+        - 'User Authentication'
+      parameters: []
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schemas:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                        description: Email address
+                        example: admin@gmail.com
+                      password:
+                        type: string
+                        description: Password
+                        example: 123456789
+
+
+      

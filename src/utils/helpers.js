@@ -37,3 +37,18 @@ export const exclude = (data, keys) => {
 export const getInitials = (name) => {
     return name.match(/(\b\S)?/g).join("");
 };
+
+export const currentUser = (req) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    var userd;
+
+    if (!token) throw new Error("Invalid user");
+
+    jwt.verify(token, TOKEN_SECRET, (err, user) => {
+        if (err) throw new Error("Invalid user");
+        userd = user;
+    });
+
+    return userd;
+};
